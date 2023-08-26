@@ -3,9 +3,9 @@
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
-const renderCountry = function(data){
+const renderCountry = function(data, className =''){
   const html = `
-    <article class="country">
+    <article class="country ${className}">
       <img class="country__img" src="${data.flags.svg}" />
       <div class="country__data">
         <h3 class="country__name">${data.name.common}</h3>
@@ -27,27 +27,20 @@ const renderCountry = function(data){
   countriesContainer.style.opacity = 1;
 }
 
-const getCountryAndNeighbour = function(country){
-const request = new XMLHttpRequest();
-request.open('GET', `https://restcountries.com/v3.1/name/${country}`);
-request.send();
+const getCountryData = function(country) {
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(response => response.json())
+    .then(data => {
+      renderCountry(data[0])
+      const neighbour =  data[0].borders[0]
+      if(!neighbour) return
 
-request.addEventListener('load', function () {
-  const [data] = JSON.parse(this.responseText); 
-  console.log(data);
-  renderCountry(data)  
-  const [neighbour] = data.borders;
-  if(!neighbour) return;
-  const request2 = new XMLHttpRequest();
-  request2.open('GET', `https://restcountries.com/v3.1/alpha/${neighbour}`);
-  request2.send();
-  request2.addEventListener('load', function(){
-    const data2 = JSON.parse(this.responseText)
-    console.log(data2)
-  })
-})
+    return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`)
+    }).then(response => response.json())
+    .then(data => renderCountry(data[0],'neighbour'));
 };
 
-getCountryAndNeighbour('pakistan')
+
+getCountryData('pakistan')
 
 
